@@ -38,9 +38,7 @@
 
     * { box-sizing: border-box; }
 
-    html {
-      -webkit-text-size-adjust: 100%;
-    }
+    html { -webkit-text-size-adjust: 100%; }
 
     body {
       margin: 0;
@@ -264,6 +262,15 @@
       font-weight: 650;
     }
 
+    .countdown {
+      margin: 7px 0 0;
+      color: #656377;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .countdown strong { color: #59448d; }
+
     .footer {
       padding: 11px 16px 12px;
       border-top: 1px solid #dcd4eb;
@@ -378,7 +385,10 @@
 
         <p class="eyebrow">తెలుగు &amp; English Market Learning</p>
         <h1><span>Intraday</span> Bulls</h1>
-        <p class="tagline">Learn market concepts at your own pace<br>మార్కెట్ విషయాలను సులభంగా తెలుసుకోండి</p>
+        <p class="tagline">
+          Learn market concepts at your own pace<br>
+          మార్కెట్ విషయాలను సులభంగా తెలుసుకోండి
+        </p>
       </header>
 
       <section class="content">
@@ -388,7 +398,8 @@
           Telugu and English learning content about stock market fundamentals,
           chart concepts and risk awareness.
           <br>
-          స్టాక్ మార్కెట్ ప్రాథమికాలు, చార్ట్ అవగాహన, రిస్క్ గురించి తెలుగులో మరియు Englishలో తెలుసుకోండి.
+          స్టాక్ మార్కెట్ ప్రాథమికాలు, చార్ట్ అవగాహన, రిస్క్ గురించి
+          తెలుగులో మరియు Englishలో తెలుసుకోండి.
         </p>
 
         <div class="benefits">
@@ -414,6 +425,12 @@
         </a>
 
         <p class="micro">Free to join • విద్య కోసం మాత్రమే</p>
+        <p class="countdown" id="countdownText" aria-live="polite">
+          Telegramకి ఆటోమేటిక్‌గా వెళ్లడానికి
+          <strong><span id="seconds">10</span> seconds</strong>
+          <br>
+          Auto-opening Telegram in <strong><span id="secondsEnglish">10</span> seconds</strong>
+        </p>
       </section>
 
       <footer class="footer">
@@ -489,7 +506,11 @@
     (function () {
       "use strict";
 
-      // Subscribe event fires only when the visitor clicks the CTA.
+      const telegramUrl = "https://t.me/+LPJsrlBFm94xZmU1";
+      let secondsLeft = 10;
+      let timerPaused = false;
+
+      // Subscribe fires only when the visitor clicks the CTA.
       document.getElementById("joinBtn").addEventListener("click", function () {
         try {
           if (typeof window.fbq === "function") {
@@ -498,21 +519,31 @@
         } catch (error) {}
       });
 
+      // Legal popups pause the redirect countdown while open.
       document.querySelectorAll("[data-dialog]").forEach(function (button) {
         button.addEventListener("click", function () {
           const dialog = document.getElementById(button.dataset.dialog);
-          if (dialog) dialog.showModal();
+          if (dialog) {
+            timerPaused = true;
+            dialog.showModal();
+          }
         });
       });
 
       document.querySelectorAll("dialog").forEach(function (dialog) {
         const closeButton = dialog.querySelector(".close");
 
+        function resumeTimer() {
+          timerPaused = false;
+        }
+
         if (closeButton) {
           closeButton.addEventListener("click", function () {
             dialog.close();
           });
         }
+
+        dialog.addEventListener("close", resumeTimer);
 
         dialog.addEventListener("click", function (event) {
           if (event.target !== dialog) return;
@@ -528,6 +559,24 @@
           }
         });
       });
+
+      const timer = setInterval(function () {
+        if (timerPaused) return;
+
+        secondsLeft -= 1;
+        document.getElementById("seconds").textContent = secondsLeft;
+        document.getElementById("secondsEnglish").textContent = secondsLeft;
+
+        if (secondsLeft <= 0) {
+          clearInterval(timer);
+          try {
+            if (typeof window.fbq === "function") {
+              window.fbq("trackCustom", "AutoRedirect");
+            }
+          } catch (error) {}
+          window.location.href = telegramUrl;
+        }
+      }, 1000);
     })();
   </script>
 </body>
